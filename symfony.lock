@@ -79,7 +79,6 @@
             "./bin/console"
         ]
     },
-<<<<<<< HEAD
     "symfony/debug-bundle": {
         "version": "7.2",
         "recipe": {
@@ -92,8 +91,6 @@
             "./config/packages/debug.yaml"
         ]
     },
-=======
->>>>>>> 544364466789a080896a6cc9ad37bb898e51a2a3
     "symfony/flex": {
         "version": "2.5",
         "recipe": {
@@ -107,7 +104,6 @@
             "./.env.dev"
         ]
     },
-<<<<<<< HEAD
     "symfony/form": {
         "version": "7.2",
         "recipe": {
@@ -120,8 +116,6 @@
             "./config/packages/csrf.yaml"
         ]
     },
-=======
->>>>>>> 544364466789a080896a6cc9ad37bb898e51a2a3
     "symfony/framework-bundle": {
         "version": "7.2",
         "recipe": {
@@ -141,7 +135,6 @@
             "./src/Kernel.php"
         ]
     },
-<<<<<<< HEAD
     "symfony/mailer": {
         "version": "7.2",
         "recipe": {
@@ -214,8 +207,6 @@
             "./tests/bootstrap.php"
         ]
     },
-=======
->>>>>>> 544364466789a080896a6cc9ad37bb898e51a2a3
     "symfony/routing": {
         "version": "7.2",
         "recipe": {
@@ -228,7 +219,6 @@
             "./config/packages/routing.yaml",
             "./config/routes.yaml"
         ]
-<<<<<<< HEAD
     },
     "symfony/security-bundle": {
         "version": "7.2",
@@ -320,7 +310,5 @@
     },
     "twig/extra-bundle": {
         "version": "v3.20.0"
-=======
->>>>>>> 544364466789a080896a6cc9ad37bb898e51a2a3
     }
 }
