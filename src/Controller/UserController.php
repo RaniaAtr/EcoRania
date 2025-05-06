@@ -49,7 +49,7 @@ class UserController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
-        if (!isset($data['email'], $data['password'], $data['nom'], $data['prenom'])) {
+        if (!isset($data['email'], $data['password'], $data['nom'], $data['prenom'], $data['roles'])) {
             return $this->json(['message' => 'Données incomplètes'], Response::HTTP_BAD_REQUEST);
         }
 
