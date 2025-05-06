@@ -64,8 +64,14 @@ class UserController extends AbstractController
        
         $user->setPassword($hashedPassword);
 
-        $roles = $data['roles'] ?? ['ROLE_USER'];
-        $user->setRoles($roles);
+        // Si c'est un professionnel, il est en attente de validation
+    
+        if (in_array('ROLE_PROFESSIONNEL', $roles)) {
+        $user->setStatus('pending');  // Le statut est "pending" jusqu'à validation par admin
+    }
+
+    // Assignation des rôles à l'utilisateur
+    $user->setRoles($roles);
 
        
         $this->em->persist($user);
