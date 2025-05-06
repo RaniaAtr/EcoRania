@@ -30,6 +30,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
+    #[ORM\Column(length: 50)]
+    private ?string $status = 'pending';
+
     public function getId(): ?int
     {
         return $this->id;
