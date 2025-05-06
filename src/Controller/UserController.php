@@ -53,6 +53,12 @@ class UserController extends AbstractController
             return $this->json(['message' => 'Données incomplètes'], Response::HTTP_BAD_REQUEST);
         }
 
+        // Vérifie si le rôle est valide
+        $roles = $data['roles'];
+        if (!in_array('ROLE_USER', $roles) && !in_array('ROLE_PROFESSIONNEL', $roles)) {
+        return $this->json(['message' => 'Le rôle doit être "ROLE_USER" ou "ROLE_PROFESSIONNEL"'], Response::HTTP_BAD_REQUEST);
+        }
+
         $user = new User();
         $user->setEmail($data['email']);
         $user->setNom($data['nom']);
