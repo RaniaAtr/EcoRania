@@ -74,13 +74,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-        $roles = $this->roles;
-        // garanti au moins un rôle
-        $roles[] = 'ROLE_USER';
-        return array_unique($roles);
+        return array_unique($this->roles);
     }
 
-    public function setRoles(array $roles): static
+    public function setRoles(array $roles): self
     {
         $this->roles = $roles;
         return $this;
@@ -91,13 +88,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->password;
     }
 
-    public function setPassword(string $password): static
+    public function setPassword(string $password): self
     {
         $this->password = $password;
         return $this;
     }
 
-    public function eraseCredentials() :void
+    public function eraseCredentials(): void
     {
         // Si tu stockes des données sensibles temporairement, nettoie-les ici
     }
