@@ -35,12 +35,18 @@ security:
 
     access_control:
 
-        # Autoriser l'inscription (par exemple /api/register)
-        - { path: ^/api/users/create, roles: PUBLIC_ACCESS }
-        - { path: ^/api/login_check, roles: PUBLIC_ACCESS }
+        # Autoriser l'inscription
+    - { path: ^/api/users/create, roles: PUBLIC_ACCESS }
 
-        # Seuls les admins peuvent accéder à /api/users (liste)
-        - { path: ^/api/users$, roles: ROLE_USER }
+    # Autoriser le login JWT
+    - { path: ^/api/login_check, roles: PUBLIC_ACCESS }
 
-        # Toutes les autres routes API nécessitent un token JWT
-        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+    #  Protéger les routes d'administration
+    - { path: ^/api/admin, roles: ROLE_ADMIN }
+
+    #  Accès aux infos utilisateur connecté
+    - { path: ^/api/users$, roles: ROLE_USER }
+
+    #  Toute autre route API requiert un JWT
+    - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+
