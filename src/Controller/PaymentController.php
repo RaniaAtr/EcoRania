@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Order;
+use App\Entity\Activity;
 use App\Repository\OrderRepository;
+use App\Repository\ActivityRepository;
 use App\Service\StripeService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,20 +17,13 @@ use Stripe\Exception\ApiErrorException;
 
 class PaymentController extends AbstractController
 {
-    #[Route('/payment/{id}', name: 'app_home')]
-public function index(int $id, ActivityRepository $activityRepository, StripeService $stripeService): Response
-{
-    $activity = $activityRepository->find($id);
-
-    if (!$activity) {
-        throw $this->createNotFoundException('Activité non trouvée');
+    #[Route('/', name: 'app_home')]
+    public function index(StripeService $stripeService): Response
+    {
+        return $this->render('payment/index.html.twig', [
+            'stripe_public_key' => $stripeService->getPublicKey(),
+        ]);
     }
-
-    return $this->render('payment/index.html.twig', [
-        'activity' => $activity,
-        'stripe_public_key' => $stripeService->getPublicKey(),
-    ]);
-}
 
     #[Route('/checkout', name: 'app_checkout', methods: ['POST'])]
     public function checkout(
