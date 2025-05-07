@@ -30,12 +30,12 @@ class PaymentController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response {
         // Récupération des données du formulaire
-        $productName = $request->request->get('product_name');
+        $id_Activity = $request->request->get('id_Activity');
         $amount = (float) $request->request->get('amount');
 
         // Création d'une nouvelle commande
         $order = new Order();
-        $order->setProductName($productName);
+        $order->setid_Activity($id_Activity);
         $order->setAmount($amount);
         $entityManager->persist($order);
         $entityManager->flush();
@@ -50,7 +50,7 @@ class PaymentController extends AbstractController
 
             $session = $stripeService->createCheckoutSession(
                 $amount,
-                $productName,
+                $id_Activity,
                 $successUrl,
                 $cancelUrl
             );
