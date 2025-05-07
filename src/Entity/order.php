@@ -45,14 +45,14 @@ class Order
         return $this->id;
     }
 
-    public function getProductName(): ?string
+    public function getid_Activity(): ?string
     {
-        return $this->productName;
+        return $this->id_Activity;
     }
 
-    public function setProductName(string $productName): static
+    public function setid_Activity(string $id_Activity): static
     {
-        $this->productName = $productName;
+        $this->id_Activity = $id_Activity;
 
         return $this;
     }
