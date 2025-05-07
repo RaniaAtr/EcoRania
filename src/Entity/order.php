@@ -15,7 +15,7 @@ class Order
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $productName = null;
+    private ?string $id_Activity = null;
 
     #[ORM\Column]
     private ?float $amount = null;
