@@ -49,14 +49,8 @@ class UserController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
-        if (!isset($data['email'], $data['password'], $data['nom'], $data['prenom'], $data['roles'])) {
+        if (!isset($data['email'], $data['password'], $data['nom'], $data['prenom'])) {
             return $this->json(['message' => 'Données incomplètes'], Response::HTTP_BAD_REQUEST);
-        }
-
-        // Vérifie si le rôle est valide
-        $roles = $data['roles'];
-        if (!in_array('ROLE_USER', $roles) && !in_array('ROLE_PROFESSIONNEL', $roles)) {
-        return $this->json(['message' => 'Le rôle doit être "ROLE_USER" ou "ROLE_PROFESSIONNEL"'], Response::HTTP_BAD_REQUEST);
         }
 
         $user = new User();
@@ -70,14 +64,8 @@ class UserController extends AbstractController
        
         $user->setPassword($hashedPassword);
 
-        // Si c'est un professionnel, il est en attente de validation
-    
-        if (in_array('ROLE_PROFESSIONNEL', $roles)) {
-        $user->setStatus('pending');  // Le statut est "pending" jusqu'à validation par admin
-    }
-
-    // Assignation des rôles à l'utilisateur
-    $user->setRoles($roles);
+        $roles = $data['roles'] ?? ['ROLE_USER'];
+        $user->setRoles($roles);
 
        
         $this->em->persist($user);
@@ -85,7 +73,6 @@ class UserController extends AbstractController
 
         return $this->json(['message' => 'Utilisateur créé'], Response::HTTP_CREATED);
     }
-
     // ✅ Modifier un utilisateur
     #[Route('/{id}', name: 'user_update', methods: ['PUT'])]
     public function update(int $id, Request $request, UserRepository $repository): JsonResponse

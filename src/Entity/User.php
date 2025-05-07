@@ -30,9 +30,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $status = 'pending';
-
     public function getId(): ?int
     {
         return $this->id;
@@ -78,10 +75,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-        return array_unique($this->roles);
+        $roles = $this->roles;
+        // garanti au moins un rôle
+        $roles[] = 'ROLE_USER';
+        return array_unique($roles);
     }
 
-    public function setRoles(array $roles): self
+    public function setRoles(array $roles): static
     {
         $this->roles = $roles;
         return $this;
@@ -92,13 +92,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->password;
     }
 
-    public function setPassword(string $password): self
+    public function setPassword(string $password): static
     {
         $this->password = $password;
         return $this;
     }
 
-    public function eraseCredentials(): void
+    public function eraseCredentials() :void
     {
         // Si tu stockes des données sensibles temporairement, nettoie-les ici
     }
