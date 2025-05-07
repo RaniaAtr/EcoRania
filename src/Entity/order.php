@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\OrderRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Activity;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
@@ -16,6 +17,9 @@ class Order
 
     #[ORM\Column(length: 255)]
     private ?string $id_Activity = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $id_User = null;
 
     #[ORM\Column]
     private ?float $amount = null;
@@ -53,6 +57,18 @@ class Order
     public function setid_Activity(string $id_Activity): static
     {
         $this->id_Activity = $id_Activity;
+
+        return $this;
+    }
+
+    public function getid_User(): ?string
+    {
+        return $this->id_User;
+    }
+
+    public function setid_User(string $id_User): static
+    {
+        $this->id_User = $id_User;
 
         return $this;
     }
