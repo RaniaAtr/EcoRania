@@ -32,6 +32,9 @@ class Activity
     #[ORM\Column(length: 500)]
     private ?string $image = null;
 
+    #[ORM\Column(type: 'string', length: 20)]
+    private string $duree;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -115,4 +118,19 @@ class Activity
 
         return $this;
     }
+
+    public function getDuree(): string
+    {
+    return $this->duree;
+    }
+
+    public function setDuree(string $duree): self
+    {
+    $this->duree = $duree;
+    return $this;
+    }
 }
+
+
+
+
