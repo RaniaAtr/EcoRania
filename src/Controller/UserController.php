@@ -75,42 +75,93 @@ class UserController extends AbstractController
     }
     // ✅ Modifier un utilisateur
     #[Route('/{id}', name: 'user_update', methods: ['PUT'])]
-    public function update(int $id, Request $request, UserRepository $repository): JsonResponse
-    {
-        $user = $repository->find($id);
-        if (!$user) {
-            return $this->json(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
-        }
-
-        $data = json_decode($request->getContent(), true);
-
-        if (isset($data['email'])) $user->setEmail($data['email']);
-        if (isset($data['nom'])) $user->setNom($data['nom']);
-        if (isset($data['prenom'])) $user->setPrenom($data['prenom']);
-        if (isset($data['roles'])) $user->setRoles($data['roles']);
-
-        if (isset($data['password'])) {
-            $hashedPassword = $this->hasher->hashPassword($user, $data['password']);
-            $user->setPassword($hashedPassword);
-        }
-
-        $this->em->flush();
-
-        return $this->json(['message' => 'Utilisateur mis à jour']);
+public function update(int $id, Request $request, UserRepository $repository): JsonResponse
+{
+    $user = $repository->find($id);
+    if (!$user) {
+        return $this->json(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
     }
 
+    // Sécurité : seul l'utilisateur connecté peut modifier ses infos
+    $currentUser = $this->getUser();
+    if (!$currentUser || $currentUser->getId() !== $user->getId()) {
+        return $this->json(['message' => 'Accès interdit'], Response::HTTP_FORBIDDEN);
+    }
+
+    $data = json_decode($request->getContent(), true);
+
+    if (isset($data['email'])) $user->setEmail($data['email']);
+    if (isset($data['nom'])) $user->setNom($data['nom']);
+    if (isset($data['prenom'])) $user->setPrenom($data['prenom']);
+
+    //  Ne pas permettre de changer les rôles
+    if (isset($data['password'])) {
+        $hashedPassword = $this->hasher->hashPassword($user, $data['password']);
+        $user->setPassword($hashedPassword);
+    }
+
+    $this->em->flush();
+
+    return $this->json(['message' => 'Utilisateur mis à jour']);
+}
+
     // ✅ Supprimer un utilisateur
-    #[Route('/{id}', name: 'user_delete', methods: ['DELETE'])]
-    public function delete(int $id, UserRepository $repository): JsonResponse
-    {
+#[Route('/{id}', name: 'user_delete', methods: ['DELETE'])]
+public function delete(int $id, UserRepository $repository): JsonResponse
+{
+    $currentUser = $this->getUser();
+
+    // Vérifier si l'utilisateur connecté est un administrateur
+    if ($this->isGranted('ROLE_ADMIN')) {
+        // Si l'utilisateur est admin, il peut supprimer n'importe quel utilisateur
         $user = $repository->find($id);
-        if (!$user) {
-            return $this->json(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
+    } else {
+        // Si l'utilisateur n'est pas admin, il peut seulement supprimer son propre compte
+        if ($currentUser->getId() !== $id) {
+            return $this->json(['message' => 'Accès interdit'], Response::HTTP_FORBIDDEN);
         }
+        $user = $repository->find($id);
+    }
 
-        $this->em->remove($user);
-        $this->em->flush();
+    if (!$user) {
+        return $this->json(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
+    }
 
-        return $this->json(['message' => 'Utilisateur supprimé']);
+    // Supprimer l'utilisateur
+    $this->em->remove($user);
+    $this->em->flush();
+
+    // Retourner un message de succès
+    return $this->json(['message' => 'Utilisateur supprimé']);
+}
+
+    // ✅ afficher mes propres infos
+    #[Route('/me', name: 'user_me', methods: ['GET'])]
+public function me(): JsonResponse
+{
+    /** @var User $user */
+    $user = $this->getUser();
+
+    if (!$user) {
+        return $this->json(['message' => 'Non authentifié'], 401);
+    }
+
+    $data = [
+        'id' => $user->getId(),
+        'nom' => $user->getNom(),
+        'prenom' => $user->getPrenom(),
+        'email' => $user->getEmail(),
+        'roles' => $user->getRoles(),
+    ];
+
+    return $this->json($data);
+}
+// ✅ Déconnexion (log out) 
+    #[Route('/logout', name: 'user_logout', methods: ['POST'])]
+    public function logout(): JsonResponse
+    {
+        
+        // Message de confirmation pour la déconnexion
+        return $this->json(['message' => 'Déconnexion réussie.']);
     }
 }
