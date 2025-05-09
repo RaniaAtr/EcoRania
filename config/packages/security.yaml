@@ -40,6 +40,9 @@ security:
     # Autoriser le login JWT
     - { path: ^/api/login_check, roles: PUBLIC_ACCESS }
 
+    # Autoriser tout le monde (même non connecté) à consulter la liste et le détail des activités
+    - { path: ^/api/activities, roles: PUBLIC_ACCESS }
+
     # Route pour consulter ses propres infos
     - { path: ^/api/users/me$, roles: ROLE_USER }
 
@@ -50,8 +53,12 @@ security:
     - { path: ^/api/users$, roles: ROLE_ADMIN } # Liste des utilisateurs
     - { path: ^/api/users/\d+, roles: ROLE_ADMIN } # Suppression d'un utilisateur
 
-    # Routes d'administration
+    # Autoriser uniquement les admins à modifier les rôles des utilisateurs
+    - { path: ^/api/admin/users/\d+/roles, roles: ROLE_ADMIN }
+
+    # Routes d'administration 
     - { path: ^/api/admin, roles: ROLE_ADMIN }
+
 
     # Toute autre route API nécessite un token valide
      #- { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
