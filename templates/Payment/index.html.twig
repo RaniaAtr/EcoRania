@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Paiement pour {{ activity.titre }}{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h1 class="h4 mb-0">Paiement avec Stripe</h1>
+            </div>
+            <div class="card-body">
+                <p class="lead mb-4">
+                    Vous êtes sur le point de réserver l’activité : <strong>{{ activity.titre }}</strong><br>
+                    Montant à régler : <strong>{{ activity.prix }} €</strong>
+                </p>
+
+                <form action="{{ path('app_checkout') }}" method="post">
+                    <input type="hidden" name="id_Activity" value="{{ activity.id }}">
+                    <input type="hidden" name="amount" value="{{ activity.prix }}">
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-credit-card me-2"></i> Payer {{ activity.prix }} € avec Stripe
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
