@@ -164,4 +164,5 @@ public function me(): JsonResponse
         // Message de confirmation pour la déconnexion
         return $this->json(['message' => 'Déconnexion réussie.']);
     }
+
 }
