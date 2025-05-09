@@ -2,17 +2,34 @@
 
 namespace App\Controller;
 
+use App\Entity\Activity;
+use App\Repository\ActivityRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 
-final class ActivityController extends AbstractController
+#[Route('/api/activities')]
+class ActivityController extends AbstractController
 {
-    #[Route('/activity/api', name: 'app_activity_api')]
-    public function index(): Response
+    /**
+     
+     * Liste toutes les activités disponibles
+     */
+    #[Route('', methods: ['GET'])]
+    public function index(ActivityRepository $repo): JsonResponse
     {
-        return $this->render('activity_api/index.html.twig', [
-            'controller_name' => 'ActivityApiController',
-        ]);
+        return $this->json($repo->findAll());
+    }
+
+    /**
+   
+     * Détail d'une activité
+     */
+    #[Route('/{id}', methods: ['GET'])]
+    public function show(Activity $activity): JsonResponse
+    {
+        return $this->json($activity);
     }
 }
