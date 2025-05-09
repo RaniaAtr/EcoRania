@@ -34,19 +34,25 @@ security:
             security: false
 
     access_control:
-
-        # Autoriser l'inscription
+     # Autoriser l'inscription
     - { path: ^/api/users/create, roles: PUBLIC_ACCESS }
 
     # Autoriser le login JWT
     - { path: ^/api/login_check, roles: PUBLIC_ACCESS }
 
-    #  Protéger les routes d'administration
+    # Route pour consulter ses propres infos
+    - { path: ^/api/users/me$, roles: ROLE_USER }
+
+    # Autoriser les utilisateurs connectés à modifier/supprimer leur compte via ID
+    - { path: ^/api/users/\d+$, roles: ROLE_USER }
+
+    # Autoriser l'admin à lister tous les utilisateurs et supprimer n'importe quel compte
+    - { path: ^/api/users$, roles: ROLE_ADMIN } # Liste des utilisateurs
+    - { path: ^/api/users/\d+, roles: ROLE_ADMIN } # Suppression d'un utilisateur
+
+    # Routes d'administration
     - { path: ^/api/admin, roles: ROLE_ADMIN }
 
-    #  Accès aux infos utilisateur connecté
-    - { path: ^/api/users$, roles: ROLE_USER }
-
-    #  Toute autre route API requiert un JWT
-    - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+    # Toute autre route API nécessite un token valide
+     #- { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
