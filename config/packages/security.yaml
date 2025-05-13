@@ -34,32 +34,34 @@ security:
             security: false
 
     access_control:
-     # Autoriser l'inscription
+     # Inscription
     - { path: ^/api/users/create, roles: PUBLIC_ACCESS }
 
-    # Autoriser le login JWT
+    # Login JWT
     - { path: ^/api/login_check, roles: PUBLIC_ACCESS }
 
-    # Autoriser tout le monde (même non connecté) à consulter la liste et le détail des activités
+    - { path: ^/api/logout$, roles: IS_AUTHENTICATED_FULLY }
+
+    # Activités accessibles publiquement
     - { path: ^/api/activities, roles: PUBLIC_ACCESS }
 
-    # Route pour consulter ses propres infos
+    # Voir ses propres infos
     - { path: ^/api/users/me$, roles: ROLE_USER }
 
-    # Autoriser les utilisateurs connectés à modifier/supprimer leur compte via ID
+    # Modifier ou supprimer son propre compte
     - { path: ^/api/users/\d+$, roles: ROLE_USER }
 
-    # Autoriser l'admin à lister tous les utilisateurs et supprimer n'importe quel compte
-    - { path: ^/api/users$, roles: ROLE_ADMIN } # Liste des utilisateurs
-    - { path: ^/api/users/\d+, roles: ROLE_ADMIN } # Suppression d'un utilisateur
+    # Admin peut aussi accéder à tous les comptes
+    - { path: ^/api/users/\d+$, roles: ROLE_ADMIN }
 
-    # Autoriser uniquement les admins à modifier les rôles des utilisateurs
-    - { path: ^/api/admin/users/\d+/roles, roles: ROLE_ADMIN }
+    # Admin peut modifier les rôles
+    - { path: ^/api/users/\d+/roles$, roles: ROLE_ADMIN }
 
-    # Routes d'administration 
+    # Lister tous les utilisateurs
+    - { path: ^/api/users$, roles: ROLE_ADMIN }
+
+    # Routes d'administration générales
     - { path: ^/api/admin, roles: ROLE_ADMIN }
 
-
-    # Toute autre route API nécessite un token valide
-     #- { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
-
+    # Toute autre route API nécessite un token valide (optionnel)
+    # - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
