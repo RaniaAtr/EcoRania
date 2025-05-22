@@ -5,6 +5,9 @@ namespace App\Entity;
 use App\Repository\ActivityRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use App\Entity\Order;
 
 #[ORM\Entity(repositoryClass: ActivityRepository::class)]
 class Activity
@@ -34,6 +37,14 @@ class Activity
 
     #[ORM\Column(type: 'string', length: 20)]
     private string $duree;
+
+    #[ORM\OneToMany(mappedBy: 'activity', targetEntity: Order::class)]
+    private Collection $orders;
+
+     public function __construct()
+    {
+        $this->orders = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -129,7 +140,35 @@ class Activity
     $this->duree = $duree;
     return $this;
     }
+
+    public function getOrders(): Collection
+    {
+        return $this->orders;
+    }
+
+    public function addOrder(Order $order): self
+    {
+        if (!$this->orders->contains($order)) {
+            $this->orders->add($order);
+            $order->setActivity($this);  // lien bidirectionnel
+        }
+
+        return $this;
+    }
+
+    public function removeOrder(Order $order): self
+    {
+        if ($this->orders->removeElement($order)) {
+            // set the owning side to null (unless already changed)
+            if ($order->getActivity() === $this) {
+                $order->setActivity(null);
+            }
+        }
+
+        return $this;
+    }
 }
+
 
 
 
