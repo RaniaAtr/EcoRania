@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\OrderRepository;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Activity;
+use App\Entity\User;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
@@ -15,11 +16,13 @@ class Order
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $id_Activity = null;
+    #[ORM\ManyToOne(inversedBy: 'orders')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $id_User = null;
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Activity $activity = null;
 
     #[ORM\Column]
     private ?float $amount = null;
@@ -49,27 +52,25 @@ class Order
         return $this->id;
     }
 
-    public function getid_Activity(): ?string
+    public function getUser(): ?User
     {
-        return $this->id_Activity;
+        return $this->user;
     }
 
-    public function setid_Activity(string $id_Activity): static
+    public function setUser(?User $user): static
     {
-        $this->id_Activity = $id_Activity;
-
+        $this->user = $user;
         return $this;
     }
 
-    public function getid_User(): ?string
+    public function getActivity(): ?Activity
     {
-        return $this->id_User;
+        return $this->activity;
     }
 
-    public function setid_User(string $id_User): static
+    public function setActivity(?Activity $activity): static
     {
-        $this->id_User = $id_User;
-
+        $this->activity = $activity;
         return $this;
     }
 
@@ -81,7 +82,6 @@ class Order
     public function setAmount(float $amount): static
     {
         $this->amount = $amount;
-
         return $this;
     }
 
@@ -93,7 +93,6 @@ class Order
     public function setStripeSessionId(?string $stripeSessionId): static
     {
         $this->stripeSessionId = $stripeSessionId;
-
         return $this;
     }
 
@@ -105,7 +104,6 @@ class Order
     public function setStripePaymentId(?string $stripePaymentId): static
     {
         $this->stripePaymentId = $stripePaymentId;
-
         return $this;
     }
 
@@ -117,7 +115,6 @@ class Order
     public function setIsPaid(bool $isPaid): static
     {
         $this->isPaid = $isPaid;
-
         return $this;
     }
 
@@ -129,7 +126,6 @@ class Order
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 
@@ -141,7 +137,6 @@ class Order
     public function setPaidAt(?\DateTimeImmutable $paidAt): static
     {
         $this->paidAt = $paidAt;
-
         return $this;
     }
 }
