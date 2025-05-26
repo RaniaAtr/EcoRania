@@ -138,4 +138,25 @@ public function create(Request $request, EntityManagerInterface $em, Authorizati
 
         return $this->json(['message' => 'Activité supprimée']);
     }
+
+        /**
+     * Rechercher des activités avec filtres (prix, date, catégorie, lieu)
+     */
+    #[Route('/search', name: 'activity_search', methods: ['GET'])]
+    public function search(Request $request, ActivityRepository $repo): JsonResponse
+    {
+        $filters = [
+            'prixMax'   => $request->query->get('prixMax'),
+            'date'      => $request->query->get('date'),
+            'categorie' => $request->query->get('categorie'),
+            'lieu'      => $request->query->get('lieu'),
+        ];
+
+        $results = $repo->findByFilters($filters);
+
+         return $this->render('activity_api/index.html.twig', [
+        'activities' => $activities,
+    ]);
+    }
+
 }
