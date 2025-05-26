@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Order;
-use App\Entity\Activity;
 use App\Repository\OrderRepository;
 use App\Repository\ActivityRepository;
 use App\Service\StripeService;
@@ -29,43 +28,50 @@ class PaymentController extends AbstractController
     public function checkout(
         Request $request,
         StripeService $stripeService,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        ActivityRepository $activityRepository
     ): Response {
-        // Récupération des données du formulaire
-        $id_Activity = $request->request->get('id_Activity');
-        $amount = (float) $request->request->get('amount');
+        // Récupère l'ID de l'activité depuis le formulaire
+        $activityId = $request->request->get('activity_id');
 
-        // Création d'une nouvelle commande
+        // Trouve l'activité en base
+        $activity = $activityRepository->find($activityId);
+
+        if (!$activity) {
+            throw $this->createNotFoundException('Activité introuvable.');
+        }
+
+        // Crée une nouvelle commande liée à l'activité
         $order = new Order();
-        $order->setid_Activity($id_Activity);
-        $order->setAmount($amount);
+        $order->setActivity($activity);
+        $order->setAmount($activity->getTarif());
         $entityManager->persist($order);
         $entityManager->flush();
 
         try {
-            // Création d'une session de paiement Stripe
+            // Crée une session Stripe Checkout
             $successUrl = $this->generateUrl('app_payment_success', [
                 'orderId' => $order->getId()
             ], UrlGeneratorInterface::ABSOLUTE_URL);
-            
+
             $cancelUrl = $this->generateUrl('app_payment_cancel', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
             $session = $stripeService->createCheckoutSession(
-                $amount,
-                $id_Activity,
+                $activity->getTarif(),
+                $activity->getTitre(),
                 $successUrl,
                 $cancelUrl
             );
 
-            // Enregistrement de l'ID de session dans la commande
+            // Associe la session Stripe à la commande
             $order->setStripeSessionId($session->id);
             $entityManager->flush();
 
-            // Redirection vers Stripe Checkout
+            // Redirige vers Stripe Checkout
             return $this->redirect($session->url);
 
         } catch (ApiErrorException $e) {
-            $this->addFlash('error', 'Une erreur est survenue lors de la communication avec Stripe. Veuillez réessayer.');
+            $this->addFlash('error', 'Une erreur est survenue lors de la communication avec Stripe.');
             return $this->redirectToRoute('app_home');
         }
     }
@@ -74,7 +80,7 @@ class PaymentController extends AbstractController
     public function success(int $orderId, OrderRepository $orderRepository): Response
     {
         $order = $orderRepository->find($orderId);
-        
+
         if (!$order) {
             throw $this->createNotFoundException('Commande non trouvée.');
         }
@@ -103,12 +109,11 @@ class PaymentController extends AbstractController
 
         try {
             $event = $stripeService->handleWebhook($payload, $sigHeader, $endpointSecret);
-            
-            // Traitement de l'événement de paiement réussi
+
             if ($event->type === 'checkout.session.completed') {
                 $session = $event->data->object;
                 $order = $orderRepository->findByStripeSessionId($session->id);
-                
+
                 if ($order) {
                     $order->setIsPaid(true);
                     $order->setPaidAt(new \DateTimeImmutable());
@@ -116,11 +121,11 @@ class PaymentController extends AbstractController
                     $entityManager->flush();
                 }
             }
-            
-            return new Response('Webhooks processed successfully', Response::HTTP_OK);
-            
+
+            return new Response('Webhook traité avec succès', Response::HTTP_OK);
+
         } catch (\Exception $e) {
-            return new Response('Webhook Error: ' . $e->getMessage(), Response::HTTP_BAD_REQUEST);
+            return new Response('Erreur Webhook : ' . $e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
 }
