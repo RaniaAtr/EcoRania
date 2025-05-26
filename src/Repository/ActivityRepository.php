@@ -40,4 +40,36 @@ class ActivityRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+
+
+
+    public function findByFilters(array $filters): array
+{
+    $qb = $this->createQueryBuilder('a');
+
+    if (!empty($filters['prixMax'])) {
+        $qb->andWhere('a.tarif <= :prixMax')
+           ->setParameter('prixMax', $filters['prixMax']);
+    }
+
+    if (!empty($filters['date'])) {
+        $qb->andWhere('DATE(a.date) = :date')
+           ->setParameter('date', new \DateTime($filters['date']));
+    }
+
+    if (!empty($filters['categorie'])) {
+        $qb->andWhere('a.categorie LIKE :categorie')
+           ->setParameter('categorie', '%' . $filters['categorie'] . '%');
+    }
+
+    if (!empty($filters['lieu'])) {
+        $qb->andWhere('a.adresse LIKE :lieu')
+           ->setParameter('lieu', '%' . $filters['lieu'] . '%');
+    }
+
+    return $qb->orderBy('a.date', 'ASC')
+              ->getQuery()
+              ->getResult();
+}
+
 }
