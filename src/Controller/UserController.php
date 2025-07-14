@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/users')]
 class UserController extends AbstractController
@@ -47,8 +48,8 @@ class UserController extends AbstractController
 
     // ✅ Créer un nouvel utilisateur
     #[Route('/create', name: 'user_create', methods: ['POST'])]
-    public function create(Request $request): JsonResponse
-    {
+    public function create(Request $request, ValidatorInterface $validator): JsonResponse
+        {
         $data = json_decode($request->getContent(), true);
 
         if (!isset($data['email'], $data['password'], $data['nom'], $data['prenom'])) {
@@ -56,15 +57,34 @@ class UserController extends AbstractController
         }
 
         $user = new User();
-        $user->setEmail($data['email']);
-        $user->setNom($data['nom']);
-        $user->setPrenom($data['prenom']);
 
-        $hashedPassword = $this->hasher->hashPassword($user, $data['password']);
-        $user->setPassword($hashedPassword);
+        $nom = isset($data['nom']) && is_string($data['nom']) ? $data['nom'] : null;
+        $prenom = isset($data['prenom']) && is_string($data['prenom']) ? $data['prenom'] : null;
+        $email = isset($data['email']) && is_string($data['email']) ? $data['email'] : null;
+        $plainPassword = isset($data['password']) && is_string($data['password']) ? $data['password'] : null;
+
+        $user->setNom($nom);
+        $user->setPrenom($prenom);
+        $user->setEmail($email);
+
+        // ✅ Hash du mot de passe
+        if ($plainPassword !== null) {
+            $hashedPassword = $this->hasher->hashPassword($user, $plainPassword);
+            $user->setPassword($hashedPassword);
+        }
 
         $roles = $data['roles'] ?? ['ROLE_USER'];
         $user->setRoles($roles);
+
+        // ✅ Validation de l'entité User
+        $errors = $validator->validate($user);
+        if (count($errors) > 0) {
+            $messages = [];
+            foreach ($errors as $error) {
+                $messages[$error->getPropertyPath()] = $error->getMessage();
+            }
+            return $this->json($messages, Response::HTTP_BAD_REQUEST);
+        }
 
         $this->em->persist($user);
         $this->em->flush();
