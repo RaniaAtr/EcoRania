@@ -53,7 +53,7 @@ public function create(Request $request, EntityManagerInterface $em, Authorizati
         $activity->setDate(new \DateTime($data['date']));
     }
 
-    $activity->setCategorie($data['categorie'] ?? '');
+    $activity->setTag($data['tag'] ?? '');
     // Assurer que le tarif est bien un nombre
     $tarif = isset($data['tarif']) ? (float) $data['tarif'] : 0;
     $activity->setTarif($tarif);
@@ -75,7 +75,7 @@ public function create(Request $request, EntityManagerInterface $em, Authorizati
         'titre' => $activity->getTitre(),
         'adresse' => $activity->getAdresse(),
         'date' => $activity->getDate()->format('Y-m-d H:i:s'),
-        'categorie' => $activity->getCategorie(),
+        'tag' => $activity->getTag(),
         'tarif' => $activity->getTarif() . ' €',  // Ajouter le symbole euro
         'image' => $activity->getImage(),
         'duree' => $activity->getDuree(),
@@ -105,7 +105,7 @@ public function create(Request $request, EntityManagerInterface $em, Authorizati
             $activity->setDate(new \DateTime($data['date']));
         }
 
-        $activity->setCategorie($data['categorie'] ?? $activity->getCategorie());
+        $activity->setTag($data['tag'] ?? $activity->getTag());
         $activity->setTarif($data['tarif'] ?? $activity->getTarif());
         $activity->setImage($data['image'] ?? $activity->getImage());
 
@@ -140,7 +140,7 @@ public function create(Request $request, EntityManagerInterface $em, Authorizati
     }
 
         /**
-     * Rechercher des activités avec filtres (prix, date, catégorie, lieu)
+     * Rechercher des activités avec filtres (prix, date, tag, lieu)
      */
     #[Route('/search', name: 'activity_search', methods: ['GET'])]
     public function search(Request $request, ActivityRepository $repo): JsonResponse
@@ -148,7 +148,7 @@ public function create(Request $request, EntityManagerInterface $em, Authorizati
         $filters = [
             'prixMax'   => $request->query->get('prixMax'),
             'date'      => $request->query->get('date'),
-            'categorie' => $request->query->get('categorie'),
+            'tag' => $request->query->get('tag'),
             'lieu'      => $request->query->get('lieu'),
         ];
 

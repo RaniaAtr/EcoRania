@@ -30,7 +30,7 @@ class Activity
     private ?float $tarif = null;
 
     #[ORM\Column(length: 300)]
-    private ?string $categorie = null;
+    private ?string $tag = null;
 
     #[ORM\Column(length: 500)]
     private ?string $image = null;
@@ -106,14 +106,14 @@ class Activity
         return $this;
     }
 
-    public function getCategorie(): ?string
+    public function getTag(): ?string
     {
-        return $this->categorie;
+        return $this->tag;
     }
 
-    public function setCategorie(string $categorie): static
+    public function setTag(string $tag): static
     {
-        $this->categorie = $categorie;
+        $this->tag = $tag;
 
         return $this;
     }

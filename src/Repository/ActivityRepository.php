@@ -57,9 +57,9 @@ class ActivityRepository extends ServiceEntityRepository
            ->setParameter('date', new \DateTime($filters['date']));
     }
 
-    if (!empty($filters['categorie'])) {
-        $qb->andWhere('a.categorie LIKE :categorie')
-           ->setParameter('categorie', '%' . $filters['categorie'] . '%');
+    if (!empty($filters['tag'])) {
+        $qb->andWhere('a.tag LIKE :tag')
+           ->setParameter('tag', '%' . $filters['tag'] . '%');
     }
 
     if (!empty($filters['lieu'])) {
