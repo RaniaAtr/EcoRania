@@ -19,18 +19,50 @@ class ActivityController extends AbstractController
      */
     #[Route('', methods: ['GET'])]
     public function index(ActivityRepository $repo): JsonResponse
-    {
-        return $this->json($repo->findAll());
-    }
+{
+    $activities = $repo->findAll();
+
+    $formatted = array_map(function ($activity) {
+        return [
+            'id' => $activity->getId(),
+            'titre' => $activity->getTitre(),
+            'adresse' => $activity->getAdresse(),
+            'date' => $activity->getDate() 
+                ? $activity->getDate()->setTimezone(new \DateTimeZone('Europe/Paris'))->format(DATE_ATOM) 
+                : null,
+            'tag' => $activity->getTag(),
+            'tarif' => $activity->getTarif(),
+            'image' => $activity->getImage(),
+            'duree' => $activity->getDuree(),
+        ];
+    }, $activities);
+
+    return $this->json($formatted);
+}
+
 
     /**
      * Détail d'une activité (accessible par tous les utilisateurs)
      */
     #[Route('/{id}', methods: ['GET'])]
     public function show(Activity $activity): JsonResponse
-    {
-        return $this->json($activity);
-    }
+{
+    $formatted = [
+        'id' => $activity->getId(),
+        'titre' => $activity->getTitre(),
+        'adresse' => $activity->getAdresse(),
+        'date' => $activity->getDate() 
+            ? $activity->getDate()->setTimezone(new \DateTimeZone('Europe/Paris'))->format(DATE_ATOM) 
+            : null,
+        'tag' => $activity->getTag(),
+        'tarif' => $activity->getTarif(),
+        'image' => $activity->getImage(),
+        'duree' => $activity->getDuree(),
+    ];
+
+    return $this->json($formatted);
+}
+
 
  /**
  * Créer une activité (accessible uniquement pour les administrateurs)

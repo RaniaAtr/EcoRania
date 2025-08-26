@@ -23,7 +23,7 @@ class Activity
     #[ORM\Column(length: 350)]
     private ?string $adresse = null;
 
-    #[ORM\Column(type: 'datetime', nullable: false)]
+    #[ORM\Column(type: 'datetime_immutable', nullable: false)]
     private ?\DateTimeImmutable $date = null;
 
     #[ORM\Column]
