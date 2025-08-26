@@ -23,8 +23,8 @@ class Activity
     #[ORM\Column(length: 350)]
     private ?string $adresse = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $date = null;
+    #[ORM\Column(type: 'datetime', nullable: false)]
+    private ?\DateTimeImmutable $date = null;
 
     #[ORM\Column]
     private ?float $tarif = null;
@@ -82,12 +82,12 @@ class Activity
         return $this;
     }
 
-    public function getDate(): ?\DateTime
+    public function getDate(): ?\DateTimeImmutable
     {
         return $this->date;
     }
 
-    public function setDate(\DateTime $date): static
+    public function setDate(\DateTimeImmutable $date): self
     {
         $this->date = $date;
 

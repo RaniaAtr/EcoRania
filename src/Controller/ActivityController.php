@@ -35,7 +35,7 @@ class ActivityController extends AbstractController
  /**
  * Créer une activité (accessible uniquement pour les administrateurs)
  */
-#[Route('', methods: ['POST'])]
+    #[Route('', methods: ['POST'])]
 public function create(Request $request, EntityManagerInterface $em, AuthorizationCheckerInterface $authChecker): JsonResponse
 {
     // Vérification si l'utilisateur est un admin
@@ -48,49 +48,56 @@ public function create(Request $request, EntityManagerInterface $em, Authorizati
     $activity = new Activity();
     $activity->setTitre($data['titre'] ?? '');
     $activity->setAdresse($data['adresse'] ?? '');
-
-    if (isset($data['date'])) {
-        $activity->setDate(new \DateTime($data['date']));
-    }
-
     $activity->setTag($data['tag'] ?? '');
-    // Assurer que le tarif est bien un nombre
-    $tarif = isset($data['tarif']) ? (float) $data['tarif'] : 0;
-    $activity->setTarif($tarif);
     $activity->setImage($data['image'] ?? '');
 
-    // Durée : on force le suffixe " min" si l'admin envoie juste un nombre
-    $duree = isset($data['duree']) ? trim((string)$data['duree']) : '0';
-    if (!str_ends_with($duree, 'min')) {
-        $duree .= ' min';
-    }
+    // Gestion du tarif (stocké en float)
+    $tarif = isset($data['tarif']) ? (float) $data['tarif'] : 0;
+    $activity->setTarif($tarif);
+
+    // Gestion de la durée (stockée en minutes)
+    $duree = isset($data['duree']) ? (int) $data['duree'] : 0; 
     $activity->setDuree($duree);
+
+    // Gestion de la date
+    if (isset($data['date'])) {
+        try {
+            $activity->setDate(new \DateTimeImmutable($data['date'], new \DateTimeZone('Europe/Paris')));
+        } catch (\Exception $e) {
+            return $this->json(['message' => 'Format de date invalide'], 400);
+        }
+    }
 
     $em->persist($activity);
     $em->flush();
 
-    // Formatage du tarif avec le symbole €
+    // Préparer les données pour le frontend
     $formattedActivity = [
         'id' => $activity->getId(),
         'titre' => $activity->getTitre(),
         'adresse' => $activity->getAdresse(),
-        'date' => $activity->getDate()->format('Y-m-d H:i:s'),
+        'date' => $activity->getDate() ? $activity->getDate()->format('Y-m-d H:i:s') : null,
         'tag' => $activity->getTag(),
-        'tarif' => $activity->getTarif() . ' €',  // Ajouter le symbole euro
+        'tarif' => $activity->getTarif(),   // nombre pur, pas de "€"
         'image' => $activity->getImage(),
-        'duree' => $activity->getDuree(),
+        'duree' => $activity->getDuree(),   // en minutes
     ];
 
-    // Retourner la réponse avec l'activité formatée
     return $this->json($formattedActivity, 201);
 }
 
+
+
     /**
-     * Modifier une activité (accessible uniquement pour les administrateurs)
-     */
+ * Modifier une activité (accessible uniquement pour les administrateurs)
+ */
     #[Route('/{id}', methods: ['PUT'])]
-    public function update(Request $request, Activity $activity, EntityManagerInterface $em, AuthorizationCheckerInterface $authChecker): JsonResponse
-    {
+    public function update(
+        Request $request,
+        Activity $activity,
+        EntityManagerInterface $em,
+        AuthorizationCheckerInterface $authChecker
+    ): JsonResponse {
         // Vérification si l'utilisateur est un admin
         if (!$authChecker->isGranted('ROLE_ADMIN')) {
             return $this->json(['message' => 'Access denied'], 403);
@@ -98,28 +105,42 @@ public function create(Request $request, EntityManagerInterface $em, Authorizati
 
         $data = json_decode($request->getContent(), true);
 
+        // Champs simples
         $activity->setTitre($data['titre'] ?? $activity->getTitre());
         $activity->setAdresse($data['adresse'] ?? $activity->getAdresse());
-
-        if (!empty($data['date'])) {
-            $activity->setDate(new \DateTime($data['date']));
-        }
-
         $activity->setTag($data['tag'] ?? $activity->getTag());
-        $activity->setTarif($data['tarif'] ?? $activity->getTarif());
+        $activity->setTarif(isset($data['tarif']) ? (float) $data['tarif'] : $activity->getTarif());
         $activity->setImage($data['image'] ?? $activity->getImage());
 
-        if (isset($data['duree'])) {
-            $duree = trim((string)$data['duree']);
-            if (!str_ends_with($duree, 'min')) {
-                $duree .= ' min';
+        // Gestion de la date (DateTimeImmutable obligatoire)
+        if (!empty($data['date'])) {
+            try {
+                $activity->setDate(new \DateTimeImmutable($data['date'], new \DateTimeZone('Europe/Paris')));
+            } catch (\Exception $e) {
+                return $this->json(['message' => 'Format de date invalide'], 400);
             }
-            $activity->setDuree($duree);
+        }
+
+        // Gestion de la durée (en minutes, nombre pur)
+        if (isset($data['duree'])) {
+            $activity->setDuree((int) $data['duree']);
         }
 
         $em->flush();
 
-        return $this->json($activity);
+        // Retourner une réponse formatée
+        $formattedActivity = [
+            'id' => $activity->getId(),
+            'titre' => $activity->getTitre(),
+            'adresse' => $activity->getAdresse(),
+            'date' => $activity->getDate() ? $activity->getDate()->format('Y-m-d H:i:s') : null,
+            'tag' => $activity->getTag(),
+            'tarif' => $activity->getTarif(),
+            'image' => $activity->getImage(),
+            'duree' => $activity->getDuree(),
+        ];
+
+        return $this->json($formattedActivity);
     }
 
     /**
