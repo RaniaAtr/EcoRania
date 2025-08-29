@@ -199,17 +199,28 @@ public function create(Request $request, EntityManagerInterface $em, Authorizati
     public function search(Request $request, ActivityRepository $repo): JsonResponse
     {
         $filters = [
-            'prixMax'   => $request->query->get('prixMax'),
-            'date'      => $request->query->get('date'),
-            'tag' => $request->query->get('tag'),
-            'lieu'      => $request->query->get('lieu'),
+            'prixMax' => $request->query->get('prixMax'),
+            'date'    => $request->query->get('date'),
+            'tag'     => $request->query->get('tag'),
+            'lieu'    => $request->query->get('lieu'),
         ];
 
         $results = $repo->findByFilters($filters);
 
-         return $this->render('activity_api/index.html.twig', [
-        'activities' => $activities,
-    ]);
-    }
+        // Formater les résultats pour le front
+        $formatted = array_map(function ($activity) {
+            return [
+                'id'      => $activity->getId(),
+                'titre'   => $activity->getTitre(),
+                'adresse' => $activity->getAdresse(),
+                'date'    => $activity->getDate() ? $activity->getDate()->format(DATE_ATOM) : null,
+                'tag'     => $activity->getTag(),
+                'tarif'   => $activity->getTarif(),
+                'image'   => $activity->getImage(),
+                'duree'   => $activity->getDuree(),
+            ];
+        }, $results);
 
+        return $this->json($formatted);
+    }
 }
