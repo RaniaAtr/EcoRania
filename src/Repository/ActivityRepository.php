@@ -16,60 +16,48 @@ class ActivityRepository extends ServiceEntityRepository
         parent::__construct($registry, Activity::class);
     }
 
-    //    /**
-    //     * @return Activity[] Returns an array of Activity objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('a.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Activity
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
-
-
-
+    /**
+     * Recherche des activités selon les filtres : prixMax, date, tag, lieu
+     *
+     * @param array $filters
+     * @return Activity[]
+     */
     public function findByFilters(array $filters): array
-{
-    $qb = $this->createQueryBuilder('a');
+    {
+        $qb = $this->createQueryBuilder('a');
 
-    if (!empty($filters['prixMax'])) {
-        $qb->andWhere('a.tarif <= :prixMax')
-           ->setParameter('prixMax', $filters['prixMax']);
+        // Filtre prix maximum
+        if (!empty($filters['prixMax'])) {
+            $qb->andWhere('a.tarif <= :prixMax')
+               ->setParameter('prixMax', $filters['prixMax']);
+        }
+
+        // Filtre par date (tous les horaires du jour choisi)
+        if (!empty($filters['date'])) {
+            $date = new \DateTime($filters['date']);
+            $start = (clone $date)->setTime(0, 0, 0);
+            $end = (clone $date)->setTime(23, 59, 59);
+
+            $qb->andWhere('a.date BETWEEN :start AND :end')
+               ->setParameter('start', $start)
+               ->setParameter('end', $end);
+        }
+
+        // Filtre tag (LIKE pour correspondance partielle)
+        if (!empty($filters['tag'])) {
+            $qb->andWhere('a.tag LIKE :tag')
+               ->setParameter('tag', '%' . $filters['tag'] . '%');
+        }
+
+        // Filtre lieu (LIKE pour correspondance partielle)
+        if (!empty($filters['lieu'])) {
+            $qb->andWhere('a.adresse LIKE :lieu')
+               ->setParameter('lieu', '%' . $filters['lieu'] . '%');
+        }
+
+        // Tri par date croissante
+        return $qb->orderBy('a.date', 'ASC')
+                  ->getQuery()
+                  ->getResult();
     }
-
-    if (!empty($filters['date'])) {
-        $qb->andWhere('DATE(a.date) = :date')
-           ->setParameter('date', new \DateTime($filters['date']));
-    }
-
-    if (!empty($filters['tag'])) {
-        $qb->andWhere('a.tag LIKE :tag')
-           ->setParameter('tag', '%' . $filters['tag'] . '%');
-    }
-
-    if (!empty($filters['lieu'])) {
-        $qb->andWhere('a.adresse LIKE :lieu')
-           ->setParameter('lieu', '%' . $filters['lieu'] . '%');
-    }
-
-    return $qb->orderBy('a.date', 'ASC')
-              ->getQuery()
-              ->getResult();
-}
-
 }
