@@ -39,6 +39,37 @@ class ActivityController extends AbstractController
 
     return $this->json($formatted);
 }
+     /**
+     * Rechercher des activités avec filtres (prix, date, tag, lieu)
+     */
+    #[Route('/search', name: 'activity_search', methods: ['GET'])]
+    public function search(Request $request, ActivityRepository $repo): JsonResponse
+    {
+        $filters = [
+            'prixMax' => $request->query->get('prixMax'),
+            'date'    => $request->query->get('date'),
+            'tag'     => $request->query->get('tag'),
+            'lieu'    => $request->query->get('lieu'),
+        ];
+
+        $results = $repo->findByFilters($filters);
+
+        // Formater les résultats pour le front
+        $formatted = array_map(function ($activity) {
+            return [
+                'id'      => $activity->getId(),
+                'titre'   => $activity->getTitre(),
+                'adresse' => $activity->getAdresse(),
+                'date'    => $activity->getDate() ? $activity->getDate()->format(DATE_ATOM) : null,
+                'tag'     => $activity->getTag(),
+                'tarif'   => $activity->getTarif(),
+                'image'   => $activity->getImage(),
+                'duree'   => $activity->getDuree(),
+            ];
+        }, $results);
+
+        return $this->json($formatted);
+    }
 
 
     /**
@@ -192,35 +223,5 @@ public function create(Request $request, EntityManagerInterface $em, Authorizati
         return $this->json(['message' => 'Activité supprimée']);
     }
 
-        /**
-     * Rechercher des activités avec filtres (prix, date, tag, lieu)
-     */
-    #[Route('/search', name: 'activity_search', methods: ['GET'])]
-    public function search(Request $request, ActivityRepository $repo): JsonResponse
-    {
-        $filters = [
-            'prixMax' => $request->query->get('prixMax'),
-            'date'    => $request->query->get('date'),
-            'tag'     => $request->query->get('tag'),
-            'lieu'    => $request->query->get('lieu'),
-        ];
-
-        $results = $repo->findByFilters($filters);
-
-        // Formater les résultats pour le front
-        $formatted = array_map(function ($activity) {
-            return [
-                'id'      => $activity->getId(),
-                'titre'   => $activity->getTitre(),
-                'adresse' => $activity->getAdresse(),
-                'date'    => $activity->getDate() ? $activity->getDate()->format(DATE_ATOM) : null,
-                'tag'     => $activity->getTag(),
-                'tarif'   => $activity->getTarif(),
-                'image'   => $activity->getImage(),
-                'duree'   => $activity->getDuree(),
-            ];
-        }, $results);
-
-        return $this->json($formatted);
-    }
+       
 }
