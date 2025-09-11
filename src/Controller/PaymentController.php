@@ -24,7 +24,7 @@ class PaymentController extends AbstractController
         ]);
     }
 
-    #[Route('/checkout', name: 'app_checkout', methods: ['POST'])]
+    #[Route('/api/checkout', name: 'app_checkout', methods: ['POST'])]
     public function checkout(
         Request $request,
         StripeService $stripeService,
@@ -45,6 +45,7 @@ class PaymentController extends AbstractController
         $order = new Order();
         $order->setActivity($activity);
         $order->setAmount($activity->getTarif());
+        $order->setUser($this->getUser());
         $entityManager->persist($order);
         $entityManager->flush();
 
@@ -127,5 +128,27 @@ class PaymentController extends AbstractController
         } catch (\Exception $e) {
             return new Response('Erreur Webhook : ' . $e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
+    }
+
+    // recuperer ses propres reservations 
+    #[Route('/api/reservations', name: 'app_reservations', methods: ['GET'])]
+    public function getReservations(OrderRepository $orderRepository): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['message' => 'Non autorisé'], 401);
+        }
+
+        $orders = $orderRepository->findBy(['user' => $user]);
+
+        $data = array_map(fn($order) => [
+            'id' => $order->getId(),
+            'activity' => $order->getActivity()->getTitre(),
+            'amount' => $order->getAmount(),
+            'isPaid' => $order->isPaid(),
+            'createdAt' => $order->getCreatedAt() ? $order->getCreatedAt()->format('Y-m-d H:i:s') : null,
+        ], $orders);
+
+        return $this->json($data);
     }
 }
