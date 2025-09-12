@@ -69,7 +69,7 @@ class PaymentController extends AbstractController
             $entityManager->flush();
 
             // Redirige vers Stripe Checkout
-            return $this->redirect($session->url);
+            return $this->json(['url' => $session->url]);
 
         } catch (ApiErrorException $e) {
             $this->addFlash('error', 'Une erreur est survenue lors de la communication avec Stripe.');
