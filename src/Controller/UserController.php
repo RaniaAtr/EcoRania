@@ -123,25 +123,32 @@ class UserController extends AbstractController
     }
 
     // ✅ Supprimer un utilisateur
-    #[Route('/{id}', name: 'user_delete', methods: ['DELETE'])]
-    public function delete(int $id, UserRepository $repository): JsonResponse
-    {
-        $currentUser = $this->getUser();
-        $user = $repository->find($id);
+        #[Route('/{id}', name: 'user_delete', methods: ['DELETE'])]
+        public function delete(int $id, UserRepository $repository): JsonResponse
+        {
+            $currentUser = $this->getUser();
+            $user = $repository->find($id);
 
-        if (!$user) {
-            return $this->json(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
+            if (!$user) {
+                return $this->json(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
+            }
+
+            if (!$this->isGranted('ROLE_ADMIN') && $currentUser->getId() !== $user->getId()) {
+                return $this->json(['message' => 'Accès interdit'], Response::HTTP_FORBIDDEN);
+            }
+
+            try {
+                $this->em->remove($user);
+                $this->em->flush();
+                return $this->json(['message' => 'Utilisateur supprimé']);
+            } catch (\Exception $e) {
+                return $this->json([
+                    'message' => 'Erreur serveur lors de la suppression',
+                    'error' => $e->getMessage(), // 👈 utile pour debug (à enlever en prod si besoin)
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
         }
 
-        if (!$this->isGranted('ROLE_ADMIN') && $currentUser->getId() !== $user->getId()) {
-            return $this->json(['message' => 'Accès interdit'], Response::HTTP_FORBIDDEN);
-        }
-
-        $this->em->remove($user);
-        $this->em->flush();
-
-        return $this->json(['message' => 'Utilisateur supprimé']);
-    }
 
     // ✅ Voir ses propres infos
     #[Route('/me', name: 'user_me', methods: ['GET'])]
