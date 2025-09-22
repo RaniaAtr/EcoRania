@@ -6,7 +6,7 @@ pipeline {
         GIT_BRANCH   = "main"
         DEPLOY_DIR   = "/var/www/html/ecoactivities"  // dossier final pour Apache
         PHP_BIN      = "php"
-        COMPOSER_BIN = "/usr/bin/composer"
+        COMPOSER_BIN = "composer"
         DATABASE_URL = "mysql://eco_user:motdepassefort@127.0.0.1:3306/ecoactivitiesdb"
     }
 
