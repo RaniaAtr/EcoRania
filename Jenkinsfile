@@ -1,10 +1,15 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'composer:2.6'   // Image officielle avec PHP + Composer
+            args '-u root'         // Pour avoir les droits root
+        }
+    }
 
     environment {
         GIT_REPO     = "https://github.com/RaniaAtr/EcoRania.git"
         GIT_BRANCH   = "main"
-        DEPLOY_DIR   = "/var/www/html/ecoactivities"  // dossier final pour Apache
+        DEPLOY_DIR   = "EcoRania"   // On clone dans le workspace Jenkins
         PHP_BIN      = "php"
         COMPOSER_BIN = "composer"
         DATABASE_URL = "mysql://eco_user:motdepassefort@127.0.0.1:3306/ecoactivitiesdb"
@@ -13,15 +18,14 @@ pipeline {
     stages {
         stage('Cloner le dépôt') {
             steps {
-                // On clone DANS le workspace Jenkins (par défaut)
-                sh "rm -rf EcoRania"
-                sh "git clone -b ${GIT_BRANCH} ${GIT_REPO} EcoRania"
+                sh "rm -rf ${DEPLOY_DIR}" 
+                sh "git clone -b ${GIT_BRANCH} ${GIT_REPO} ${DEPLOY_DIR}"
             }
         }
 
         stage('Installation des dépendances') {
             steps {
-                dir("EcoRania") {
+                dir("${DEPLOY_DIR}") {
                     sh "${COMPOSER_BIN} install --no-interaction --optimize-autoloader"
                 }
             }
@@ -36,14 +40,14 @@ pipeline {
                     DATABASE_URL=${DATABASE_URL}
                     """.stripIndent()
 
-                    writeFile file: "EcoRania/.env.local", text: envLocal
+                    writeFile file: "${DEPLOY_DIR}/.env.local", text: envLocal
                 }
             }
         }
 
         stage('Migration de la base de données') {
             steps {
-                dir("EcoRania") {
+                dir("${DEPLOY_DIR}") {
                     sh "${PHP_BIN} bin/console doctrine:database:create --if-not-exists --env=prod"
                     sh "${PHP_BIN} bin/console doctrine:migrations:migrate --no-interaction --env=prod"
                 }
@@ -52,29 +56,28 @@ pipeline {
 
         stage('Exécution des tests') {
             steps {
-                dir("EcoRania") {
-                    sh "${PHP_BIN} bin/phpunit --testdox || true"
+                dir("${DEPLOY_DIR}") {
+                    sh "${PHP_BIN} bin/phpunit --testdox"
                 }
             }
         }
 
         stage('Nettoyage du cache') {
             steps {
-                dir("EcoRania") {
-                    sh "${PHP_BIN} bin/console cache:clear --env=prod"
-                    sh "${PHP_BIN} bin/console cache:warmup"
+                dir("${DEPLOY_DIR}") {
+                    sh "${PHP_BIN} bin/console cache:clear --env=prod" 
+                    sh "${PHP_BIN} bin/console cache:warmup" 
                 }
             }
         }
 
         stage('Déploiement') {
             steps {
-                // Copie du code préparé vers /var/www/html/ecoactivities
-                sh "sudo rm -rf ${DEPLOY_DIR}"
-                sh "sudo mkdir -p ${DEPLOY_DIR}"
-                sh "sudo cp -rT EcoRania ${DEPLOY_DIR}"
-                sh "sudo chown -R www-data:www-data ${DEPLOY_DIR}"
-                sh "sudo chmod -R 775 ${DEPLOY_DIR}/var"
+                sh "rm -rf /var/www/html/ecoactivities"
+                sh "mkdir -p /var/www/html/ecoactivities"
+                sh "cp -rT ${DEPLOY_DIR} /var/www/html/ecoactivities"
+                sh "chown -R www-data:www-data /var/www/html/ecoactivities"
+                sh "chmod -R 775 /var/www/html/ecoactivities/var"
             }
         }
     }
