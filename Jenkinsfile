@@ -55,7 +55,7 @@ pipeline {
                 dir("${TEMP_DIR}") {
                 echo " Exécution des migrations Doctrine..."
                 // Applique les migrations pour mettre à jour la base de données
-                sh "/usr/bin/php bin/console doctrine:migrations:migrate --no-interaction"
+                sh "php bin/console doctrine:migrations:migrate --no-interaction"
         }
     }
 }
