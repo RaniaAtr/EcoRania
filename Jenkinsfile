@@ -14,26 +14,20 @@ pipeline {
         stage('Cloner le repo Git') {
             steps {
                 echo " Récupération du code depuis GitHub..."
-                git branch: "${GIT_BRANCH}", url: "${GIT_REPO}"
+                sh "rm -rf ${DEPLOY_DIR}"
+                sh "git clone -b ${GIT_BRANCH} ${GIT_REPO} ${DEPLOY_DIR}"
             }
         }
-        stage('installation les dependances PHP v'){
-            steps {
-                echo "Instalation des dependances PHP avec composer"
-                sh """
-                ${COMPOSER_BIN} install --no-interaction --optimize-autoloader
-                """
-            }
-        }
+        
     }
 
 
     post {
         success {
-            echo ' Étapes terminées avec succès !'
+            echo 'Clonage terminé avec succès !'
         }
         failure {
-            echo ' Le pipeline a échoué.'
+            echo ' Le clonage a échoué.'
         }
     }
 }
