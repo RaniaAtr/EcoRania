@@ -24,7 +24,7 @@ pipeline {
                 def envFile = """
                 APP_ENV=prod
                 APP_DEBUG=0
-                DATABASE_URL="mysql://eco_user:motdepassefort@127.0.0.1:3306/ecoactivitiesdb?serverVersion=8.0&charset=utf8mb4"
+                DATABASE_URL="postgresql://postgres:TON_MOT_DE_PASSE@postgres_container:5432/ecoactivities?serverVersion=12&charset=utf8"
             """.stripIndent()
 
                 // Écrire à la fois .env et .env.local
@@ -55,6 +55,7 @@ pipeline {
                 dir("${TEMP_DIR}") {
                 echo " Exécution des migrations Doctrine..."
                 // Applique les migrations pour mettre à jour la base de données
+                sh "php bin/console doctrine:database:create --if-not-exists"
                 sh "php bin/console doctrine:migrations:migrate --no-interaction"
         }
     }
