@@ -43,6 +43,16 @@ pipeline {
         }
             }
         }
+        stage('Migration de la base de données') {
+            steps {
+                dir("${TEMP_DIR}") {
+                echo " Exécution des migrations Doctrine..."
+                // Applique les migrations pour mettre à jour la base de données
+                sh "php bin/console doctrine:migrations:migrate --no-interaction"
+        }
+    }
+}
+        
         
     }
 
