@@ -43,6 +43,13 @@ pipeline {
         }
             }
         }
+        stage('Vérifier PHP') {
+            steps {
+                sh 'which php'
+                sh 'php -v'
+                sh 'php -m | grep pdo_mysql'
+                }
+        }
         stage('Migration de la base de données') {
             steps {
                 dir("${TEMP_DIR}") {
