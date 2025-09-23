@@ -17,15 +17,6 @@ pipeline {
                 sh "git clone -b ${GIT_BRANCH} ${GIT_REPO} ${TEMP_DIR}"
             }
         }
-
-        stage('Installation des dépendances') {
-            steps {
-                dir("${TEMP_DIR}") {
-                echo " Installation des dépendances PHP..."
-                sh "${COMPOSER_BIN} install --no-interaction --optimize-autoloader"
-        }
-            }
-        }
         stage('Configuration de l\'environnement') {
             steps {
                 script {
@@ -40,6 +31,16 @@ pipeline {
                     }
             }
         }
+
+        stage('Installation des dépendances') {
+            steps {
+                dir("${TEMP_DIR}") {
+                echo " Installation des dépendances PHP..."
+                sh "${COMPOSER_BIN} install --no-interaction --optimize-autoloader"
+        }
+            }
+        }
+        
     }
 
     post {
