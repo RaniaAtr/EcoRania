@@ -57,6 +57,7 @@ pipeline {
                 echo " Exécution des migrations Doctrine..."
                 // Applique les migrations pour mettre à jour la base de données
                 sh "php bin/console doctrine:database:create --if-not-exists"
+                sh "php bin/console doctrine:migrations:sync-metadata-storage"
                 sh "php bin/console doctrine:migrations:migrate --no-interaction"
         }
     }
