@@ -17,19 +17,22 @@ pipeline {
                 sh "git clone -b ${GIT_BRANCH} ${GIT_REPO} ${TEMP_DIR}"
             }
         }
+
         stage('Configuration de l\'environnement') {
             steps {
                 script {
-                        def envLocal = """
-                        APP_ENV=prod
-                        APP_DEBUG=0
-                        DATABASE_URL="mysql://eco_user:motdepassefort@127.0.0.1:3306/ecoactivitiesdb?serverVersion=8.0&charset=utf8mb4"
-                        """.stripIndent()
+                def envFile = """
+                APP_ENV=prod
+                APP_DEBUG=0
+                DATABASE_URL="mysql://eco_user:motdepassefort@127.0.0.1:3306/ecoactivitiesdb?serverVersion=8.0&charset=utf8mb4"
+            """.stripIndent()
 
-                        writeFile file: "${TEMP_DIR}/.env.local", text: envLocal
-                        echo "✅ Fichier .env.local créé avec succès"
-                    }
-            }
+                // Écrire à la fois .env et .env.local
+                writeFile file: "${TEMP_DIR}/.env", text: envFile
+                writeFile file: "${TEMP_DIR}/.env.local", text: envFile
+                echo "✅ Fichiers .env et .env.local créés avec succès"
+                }
+                }
         }
 
         stage('Installation des dépendances') {
