@@ -24,7 +24,7 @@ pipeline {
                 def envFile = """
                 APP_ENV=prod
                 APP_DEBUG=0
-                DATABASE_URL="postgresql://postgres:TON_MOT_DE_PASSE@postgres_container:5432/ecoactivities?serverVersion=12&charset=utf8"
+                DATABASE_URL="postgresql://sonar:sonar@172.18.0.3:5432/ecobase?serverVersion=12&charset=utf8"
             """.stripIndent()
 
                 // Écrire à la fois .env et .env.local
