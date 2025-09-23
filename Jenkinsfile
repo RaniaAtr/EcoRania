@@ -6,6 +6,7 @@ pipeline {
         GIT_BRANCH = "main"
         TEMP_DIR   = "${WORKSPACE}/ecoactivities"
         DEPLOY_DIR = "/var/www/html/ecoactivities"
+        COMPOSER_BIN = "composer"
     }
 
     stages {
@@ -16,14 +17,23 @@ pipeline {
                 sh "git clone -b ${GIT_BRANCH} ${GIT_REPO} ${TEMP_DIR}"
             }
         }
+
+        stage('Installation des dépendances') {
+            steps {
+                dir("${TEMP_DIR}") {
+                echo " Installation des dépendances PHP..."
+                sh "${COMPOSER_BIN} install --no-interaction --optimize-autoloader"
+        }
+            }
+        }
     }
 
     post {
         success {
-            echo '✅ Clonage temporaire terminé avec succès !'
+            echo 'Étapes temporaires terminées avec succès'
         }
         failure {
-            echo '❌ Le clonage a échoué.'
+            echo 'Le pipeline a échoué'
         }
     }
 }
