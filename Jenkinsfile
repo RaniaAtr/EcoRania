@@ -25,6 +25,7 @@ pipeline {
                 APP_ENV=prod
                 APP_DEBUG=0
                 DATABASE_URL="postgresql://sonar:sonar@172.18.0.3:5432/ecobase?serverVersion=12&charset=utf8"
+                MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
             """.stripIndent()
 
                 // Écrire à la fois .env et .env.local
