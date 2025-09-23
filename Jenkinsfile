@@ -24,7 +24,7 @@ pipeline {
                 def envFile = """
                 APP_ENV=prod
                 APP_DEBUG=0
-                DATABASE_URL="mysql://sonar:sonar@127.0.0.1:3306/ecobase?serverVersion=11&charset=utf8"
+                DATABASE_URL="mysql://sonar:sonar@172.18.0.1:3306/ecobase?serverVersion=11&charset=utf8"
                 MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
             """.stripIndent()
 
