@@ -26,6 +26,20 @@ pipeline {
         }
             }
         }
+        stage('Configuration de l\'environnement') {
+            steps {
+                script {
+                        def envLocal = """
+                        APP_ENV=prod
+                        APP_DEBUG=0
+                        DATABASE_URL="mysql://eco_user:motdepassefort@127.0.0.1:3306/ecoactivitiesdb?serverVersion=8.0&charset=utf8mb4"
+                        """.stripIndent()
+
+                        writeFile file: "${TEMP_DIR}/.env.local", text: envLocal
+                        echo "✅ Fichier .env.local créé avec succès"
+                    }
+            }
+        }
     }
 
     post {
