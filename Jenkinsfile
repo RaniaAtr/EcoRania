@@ -2,32 +2,28 @@ pipeline {
     agent any
 
     environment {
-        GIT_REPO     = "https://github.com/RaniaAtr/EcoRania.git"
-        GIT_BRANCH   = "main"
-        DEPLOY_DIR   = "/var/www/html/ecoactivities"
-        PHP_BIN      = "php"
-        COMPOSER_BIN = "composer"
-        DATABASE_URL = "mysql://eco_user:motdepassefort@127.0.0.1:3306/ecoactivitiesdb"
+        GIT_REPO   = "https://github.com/RaniaAtr/EcoRania.git"
+        GIT_BRANCH = "main"
+        TEMP_DIR   = "${WORKSPACE}/ecoactivities"
+        DEPLOY_DIR = "/var/www/html/ecoactivities"
     }
 
     stages {
-        stage('Cloner le repo Git') {
+        stage('Cloner le dépôt dans le dossier temporaire') {
             steps {
-                echo " Récupération du code depuis GitHub..."
-                sh "rm -rf ${DEPLOY_DIR}"
-                sh "git clone -b ${GIT_BRANCH} ${GIT_REPO} ${DEPLOY_DIR}"
+                echo "🔄 Suppression de l’ancien dossier temporaire et clonage..."
+                sh "rm -rf ${TEMP_DIR}"
+                sh "git clone -b ${GIT_BRANCH} ${GIT_REPO} ${TEMP_DIR}"
             }
         }
-        
     }
-
 
     post {
         success {
-            echo 'Clonage terminé avec succès !'
+            echo '✅ Clonage temporaire terminé avec succès !'
         }
         failure {
-            echo ' Le clonage a échoué.'
+            echo '❌ Le clonage a échoué.'
         }
     }
 }
