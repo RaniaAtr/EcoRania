@@ -17,14 +17,23 @@ pipeline {
                 git branch: "${GIT_BRANCH}", url: "${GIT_REPO}"
             }
         }
+        stage('installation les dependances PHP v'){
+            steps {
+                echo "Instalation des dependances PHP avec composer"
+                sh """
+                ${COMPOSER_BIN} install --no-interaction --optimize-autoloader
+                """
+            }
+        }
     }
+
 
     post {
         success {
-            echo ' Clonage terminé avec succès !'
+            echo ' Étapes terminées avec succès !'
         }
         failure {
-            echo ' Le clonage a échoué.'
+            echo ' Le pipeline a échoué.'
         }
     }
 }
