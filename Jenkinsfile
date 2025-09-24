@@ -2,11 +2,14 @@ pipeline {
     agent any
 
     environment {
-        GIT_REPO   = "https://github.com/RaniaAtr/EcoRania.git"
-        GIT_BRANCH = "main"
-        TEMP_DIR   = "${WORKSPACE}/ecoactivities"
-        DEPLOY_DIR = "/var/www/html/ecoactivities"
+        GIT_REPO     = "https://github.com/RaniaAtr/EcoRania.git"
+        GIT_BRANCH   = "main"
+        TEMP_DIR     = "${WORKSPACE}/ecoactivities"
+        DEPLOY_DIR   = "/var/www/html/ecoactivities"
         COMPOSER_BIN = "composer"
+        SSH_OPTS     = "-o StrictHostKeyChecking=no"
+        REMOTE_USER  = "ubuntu"
+        REMOTE_HOST  = "51.75.207.28"
     }
 
     stages {
@@ -21,81 +24,83 @@ pipeline {
         stage('Configuration de l\'environnement') {
             steps {
                 script {
-                def envFile = """
-                APP_ENV=prod
-                APP_DEBUG=0
-                DATABASE_URL="mysql://sonar:sonar@172.18.0.1:3306/ecobase?serverVersion=11&charset=utf8"
-                MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
-            """.stripIndent()
+                    def envFile = """
+                        APP_ENV=prod
+                        APP_DEBUG=0
+                        DATABASE_URL="mysql://sonar:sonar@172.18.0.1:3306/ecobase?serverVersion=11&charset=utf8"
+                        MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
+                    """.stripIndent()
 
-                // Écrire à la fois .env et .env.local
-                writeFile file: "${TEMP_DIR}/.env", text: envFile
-                writeFile file: "${TEMP_DIR}/.env.local", text: envFile
-                echo " Fichiers .env et .env.local créés avec succès"
+                    writeFile file: "${TEMP_DIR}/.env", text: envFile
+                    writeFile file: "${TEMP_DIR}/.env.local", text: envFile
+                    echo "✅ Fichiers .env et .env.local créés avec succès"
                 }
-                }
+            }
         }
 
         stage('Installation des dépendances') {
             steps {
                 dir("${TEMP_DIR}") {
-                echo " Installation des dépendances PHP..."
-                sh "${COMPOSER_BIN} install --no-interaction --optimize-autoloader"
-        }
+                    echo "📦 Installation des dépendances PHP..."
+                    sh "${COMPOSER_BIN} install --no-interaction --optimize-autoloader"
+                }
             }
         }
+
         stage('Vérifier PHP') {
             steps {
                 sh 'which php'
                 sh 'php -v'
-                sh 'php -m | grep pdo_mysql'
-                }
+                sh 'php -m | grep pdo_mysql || true'
+            }
         }
+
         stage('Migration de la base de données') {
             steps {
                 dir("${TEMP_DIR}") {
-                echo " Exécution des migrations Doctrine..."
-                // Applique les migrations pour mettre à jour la base de données
-                sh "php bin/console doctrine:database:create --if-not-exists"
-                sh "php bin/console doctrine:migrations:sync-metadata-storage"
-                sh "php bin/console doctrine:migrations:migrate --no-interaction"
-        }
-    }
-        }
-        stage('Exécution des tests PHP unit') {
-            steps{
-                dir("${TEMP_DIR}") {
-                    sh './vendor/bin/phpunit --testdox'
+                    echo "📂 Exécution des migrations Doctrine..."
+                    sh "php bin/console doctrine:database:create --if-not-exists"
+                    sh "php bin/console doctrine:migrations:sync-metadata-storage"
+                    sh "php bin/console doctrine:migrations:migrate --no-interaction"
                 }
-
             }
         }
-        stage ('Nettoyer la cache'){
-            steps{ dir("${TEMP_DIR}") {
-                    echo " Nettoyage et réchauffage du cache Symfony..."
+
+        stage('Exécution des tests PHP Unit') {
+            steps {
+                dir("${TEMP_DIR}") {
+                    echo "🧪 Lancement des tests PHPUnit..."
+                    sh './vendor/bin/phpunit --testdox'
+                }
+            }
+        }
+
+        stage('Nettoyage du cache') {
+            steps {
+                dir("${TEMP_DIR}") {
+                    echo "🧹 Nettoyage et réchauffage du cache Symfony..."
                     sh 'php bin/console cache:clear --env=prod'
                     sh 'php bin/console cache:warmup'
                 }
-
             }
         }
+
         stage('Déploiement') {
             steps {
-                echo "Déploiement du site en production..."
-        
+                echo "🚀 Déploiement du site en production..."
                 sh """
-                scp -o StrictHostKeyChecking=no -r "${TEMP_DIR}/" ubuntu@51.75.207.28:/var/www/html/ecoactivities/
+                    rsync -avz --delete -e "ssh ${SSH_OPTS}" "${TEMP_DIR}/" ${REMOTE_USER}@${REMOTE_HOST}:${DEPLOY_DIR}/
                 """
+            }
         }
-  
     }
 
     post {
         success {
-            echo 'Déploiement réussi !'
+            echo '✅ Déploiement réussi !'
         }
         failure {
-            echo 'Erreur lors du déploiement.'
+            echo '❌ Erreur lors du déploiement.'
         }
     }
 }
