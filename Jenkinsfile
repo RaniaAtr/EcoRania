@@ -83,7 +83,9 @@ pipeline {
             steps {
                 echo "Déploiement du site en production..."
         
-                scp -r ${TEMP_DIR} ubuntu@51.75.207.28:/var/www/html/
+                sh """
+                scp -o StrictHostKeyChecking=no -r "${TEMP_DIR}/" ubuntu@51.75.207.28:/var/www/html/ecoactivities/
+                """
         }
   
     }
