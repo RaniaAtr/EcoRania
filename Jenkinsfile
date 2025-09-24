@@ -101,10 +101,10 @@ pipeline {
 
     post {
         success {
-            echo 'Étapes temporaires terminées avec succès'
+            echo 'Déploiement réussi !'
         }
         failure {
-            echo 'Le pipeline a échoué'
+            echo 'Erreur lors du déploiement.'
         }
     }
 }
