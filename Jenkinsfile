@@ -79,9 +79,24 @@ pipeline {
 
             }
         }
-
-    
+        stage('Déploiement') {
+            steps {
+                echo "Déploiement du site en production..."
         
+                // Supprime l'ancien dossier de déploiement
+                sh "rm -rf /var/www/html/ecoactivities"
+        
+                // Crée le dossier de déploiement
+                sh "mkdir -p /var/www/html/ecoactivities"
+        
+                // Copie tout le contenu du dossier temporaire vers le dossier de déploiement
+                sh "cp -rT ${WORKSPACE}/ecoactivities /var/www/html/ecoactivities"
+        
+                // Ajuste les permissions pour que le serveur web puisse écrire dans var/cache et var/log
+                sh "chmod -R 775 /var/www/html/ecoactivities/var"
+            }
+        }
+  
     }
 
     post {
