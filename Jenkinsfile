@@ -31,7 +31,7 @@ pipeline {
                 // Écrire à la fois .env et .env.local
                 writeFile file: "${TEMP_DIR}/.env", text: envFile
                 writeFile file: "${TEMP_DIR}/.env.local", text: envFile
-                echo "✅ Fichiers .env et .env.local créés avec succès"
+                echo " Fichiers .env et .env.local créés avec succès"
                 }
                 }
         }
@@ -61,7 +61,7 @@ pipeline {
                 sh "php bin/console doctrine:migrations:migrate --no-interaction"
         }
     }
-}
+        }
         stage('Exécution des tests PHP unit') {
             steps{
                 dir("${TEMP_DIR}") {
@@ -70,6 +70,17 @@ pipeline {
 
             }
         }
+        stage ('Nettoyer la cache'){
+            steps{ dir("${DEPLOY_DIR}") {
+                    echo " Nettoyage et réchauffage du cache Symfony..."
+                    sh 'php bin/console cache:clear --env=prod'
+                    sh 'php bin/console cache:warmup'
+                }
+
+            }
+        }
+
+    
         
     }
 
