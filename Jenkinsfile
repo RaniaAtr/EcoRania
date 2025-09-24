@@ -89,7 +89,11 @@ pipeline {
             steps {
                 echo "🚀 Déploiement du site en production..."
                 sh """
-                    rsync -avz --delete -e "ssh ${SSH_OPTS}" "${TEMP_DIR}/" ${REMOTE_USER}@${REMOTE_HOST}:${DEPLOY_DIR}/
+                    # 1. Vider le dossier distant
+                    ssh ${SSH_OPTS} ${REMOTE_USER}@${REMOTE_HOST} "rm -rf ${DEPLOY_DIR}/*"
+
+                    # 2. Copier le nouveau contenu
+                    scp ${SSH_OPTS} -r "${TEMP_DIR}/" ${REMOTE_USER}@${REMOTE_HOST}:${DEPLOY_DIR}/
                 """
             }
         }
