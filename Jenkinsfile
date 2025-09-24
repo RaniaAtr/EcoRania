@@ -71,7 +71,7 @@ pipeline {
             }
         }
         stage ('Nettoyer la cache'){
-            steps{ dir("${DEPLOY_DIR}") {
+            steps{ dir("${TEMP_DIR}") {
                     echo " Nettoyage et réchauffage du cache Symfony..."
                     sh 'php bin/console cache:clear --env=prod'
                     sh 'php bin/console cache:warmup'
