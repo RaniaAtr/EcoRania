@@ -62,7 +62,14 @@ pipeline {
         }
     }
 }
-        
+        stage('Exécution des tests PHP unit') {
+            steps{
+                dir("${TEMP_DIR}") {
+                    sh './vendor/bin/phpunit --testdox'
+                }
+
+            }
+        }
         
     }
 
