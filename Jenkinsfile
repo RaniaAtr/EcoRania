@@ -15,7 +15,7 @@ pipeline {
     stages {
         stage('Cloner le dépôt dans le dossier temporaire') {
             steps {
-                echo " Suppression de l’ancien dossier temporaire et clonage..."
+                echo "🔄 Suppression de l’ancien dossier temporaire et clonage..."
                 sh "rm -rf ${TEMP_DIR}"
                 sh "git clone -b ${GIT_BRANCH} ${GIT_REPO} ${TEMP_DIR}"
             }
@@ -33,7 +33,7 @@ pipeline {
 
                     writeFile file: "${TEMP_DIR}/.env", text: envFile
                     writeFile file: "${TEMP_DIR}/.env.local", text: envFile
-                    echo " Fichiers .env et .env.local créés avec succès"
+                    echo "✅ Fichiers .env et .env.local créés avec succès"
                 }
             }
         }
@@ -41,7 +41,7 @@ pipeline {
         stage('Installation des dépendances') {
             steps {
                 dir("${TEMP_DIR}") {
-                    echo " Installation des dépendances PHP..."
+                    echo "📦 Installation des dépendances PHP..."
                     sh "${COMPOSER_BIN} install --no-interaction --optimize-autoloader"
                 }
             }
@@ -59,6 +59,8 @@ pipeline {
             steps {
                 dir("${TEMP_DIR}") {
                     echo " Exécution des migrations Doctrine..."
+                    sh "php bin/console doctrine:database:create --if-not-exists"
+                    sh "php bin/console doctrine:migrations:sync-metadata-storage"
                     sh "php bin/console doctrine:migrations:migrate --no-interaction"
                 }
             }
@@ -85,7 +87,7 @@ pipeline {
 
         stage('Déploiement') {
             steps {
-                echo " Déploiement du site en production..."
+                echo "🚀 Déploiement du site en production..."
                 sh """
                     # 1. Vider le dossier distant
                     ssh ${SSH_OPTS} ${REMOTE_USER}@${REMOTE_HOST} "rm -rf ${DEPLOY_DIR}/*"
