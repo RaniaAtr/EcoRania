@@ -20,7 +20,7 @@ class Order
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(targetEntity: Activity::class, inversedBy: 'orders')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Activity $activity = null;
 
