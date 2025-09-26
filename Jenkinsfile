@@ -55,8 +55,7 @@ pipeline {
             }
         }
 
-        stage('Migrations DB (non-prod)') {
-            when { expression { return env.CLEAN_DB == 'true' } }
+        stage('DB migrate') {
             steps {
                 dir("${TEMP_DIR}") {
                     sh '''
@@ -65,6 +64,7 @@ pipeline {
                         php bin/console doctrine:database:create --if-not-exists
                         php bin/console doctrine:migrations:sync-metadata-storage --no-interaction
                         php bin/console doctrine:migrations:migrate --no-interaction
+                        php bin/console doctrine:schema:validate
                     '''
     }
   }
