@@ -55,16 +55,20 @@ pipeline {
             }
         }
 
-        stage('Migration de la base de données') {
+        stage('Migrations DB (non-prod)') {
+            when { expression { return env.CLEAN_DB == 'true' } }
             steps {
                 dir("${TEMP_DIR}") {
-                    echo " Exécution des migrations Doctrine..."
-                    sh "php bin/console doctrine:database:create --if-not-exists"
-                    sh "php bin/console doctrine:migrations:sync-metadata-storage"
-                    sh "php bin/console doctrine:migrations:migrate --no-interaction"
-                }
-            }
-        }
+                    sh '''
+                        set -e
+                        php bin/console doctrine:database:drop --if-exists --force
+                        php bin/console doctrine:database:create --if-not-exists
+                        php bin/console doctrine:migrations:sync-metadata-storage --no-interaction
+                        php bin/console doctrine:migrations:migrate --no-interaction
+                    '''
+    }
+  }
+}
 
         stage('Exécution des tests PHP Unit') {
             steps {
