@@ -99,7 +99,8 @@ pipeline {
                      ssh ${SSH_OPTS} ${REMOTE_USER}@${REMOTE_HOST} "find ${DEPLOY_DIR} -mindepth 1 -maxdepth 1 ! -name var -exec rm -rf {} +"
 
                     # 2. Copier le nouveau contenu
-                    scp ${SSH_OPTS} -r "${TEMP_DIR}/" ${REMOTE_USER}@${REMOTE_HOST}:${DEPLOY_DIR}/
+                    scp ${SSH_OPTS} -r "${TEMP_DIR}/." ${REMOTE_USER}@${REMOTE_HOST}:${DEPLOY_DIR}/
+
                 """
             }
         }
