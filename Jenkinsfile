@@ -25,8 +25,8 @@ pipeline {
             steps {
                 script {
                     def envFile = """
-                        APP_ENV=prod
-                        APP_DEBUG=0
+                        APP_ENV=dev
+                        APP_DEBUG=1
                         DATABASE_URL="mysql://sonar:sonar@51.75.207.28:3306/ecobase?serverVersion=11&charset=utf8"
                         MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
                         JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
